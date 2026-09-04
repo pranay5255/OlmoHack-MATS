@@ -1,0 +1,3 @@
+{{task}}
+
+Solve the complete programming problem above by implementing /app/solution.py. Follow the required inspect, implement, test, revise, and submit workflow.

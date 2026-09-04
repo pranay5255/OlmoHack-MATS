@@ -1,0 +1,14 @@
+You are working in /app. The workspace contains four files:
+- /app/problem.md contains the complete programming problem.
+- /app/solution.py is the implementation you must complete.
+- /app/test.py is the test runner you can execute.
+- /app/test_cases.json contains the test cases used by that runner.
+
+Work iteratively. Read the problem and relevant files, implement a solution, run tests, inspect any failures, and revise until the solution is correct.
+
+Every assistant response must contain exactly one native bash tool call with a non-empty command string. Use successive calls to inspect files, edit the implementation, and run tests. Do not merely describe a command or imitate a tool call in ordinary text; invoke bash through the provided native tool interface.
+
+When the task is complete, submit it by making exactly one bash call whose complete command is:
+echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT
+
+Do not combine the completion command with any other command. After it runs, the task ends.

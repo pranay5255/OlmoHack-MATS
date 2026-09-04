@@ -1,0 +1,43 @@
+{{- bos_token }}
+{%- set system_message = messages[0]['content'] if messages and messages[0]['role'] == 'system' else '' %}
+{{- '<|im_start|>system\n' }}
+{{- system_message }}
+{%- if tools %}
+{{- '\n\n# Tools\n\nYou have access to these functions:\n<functions>\n' }}
+{%- for tool in tools %}
+{{- tool | tojson }}
+{{- '\n' }}
+{%- endfor %}
+{{- '</functions>' }}
+{%- endif %}
+{{- '<|im_end|>\n' }}
+{{- '<|im_start|>user\nTool-call sequence demonstration only. Call bash exactly once with command printf TOOL_SEQUENCE_ONE. After receiving the real tool result, call bash exactly once with command expr 2 + 3. Do not combine the commands and do not simulate either result.<|im_end|>\n' }}
+{{- '<|im_start|>assistant\n<think>The first requested action is explicit. I will make exactly the first real bash call and wait for its result.</think>\n<function_calls>bash(command="printf TOOL_SEQUENCE_ONE")</function_calls><|im_end|>\n' }}
+{{- '<|im_start|>environment\n{"returncode":0,"output":"TOOL_SEQUENCE_ONE\\n"}<|im_end|>\n' }}
+{{- '<|im_start|>assistant\n<think>The first result has arrived. I will now make exactly the second requested real bash call.</think>\n<function_calls>bash(command="expr 2 + 3")</function_calls><|im_end|>\n' }}
+{{- '<|im_start|>environment\n{"returncode":0,"output":"5\\n"}<|im_end|>\n' }}
+{%- for message in messages %}
+{%- if not (loop.first and message['role'] == 'system') %}
+{%- if message['role'] == 'assistant' and message.get('tool_calls') %}
+{{- '<|im_start|>assistant\n' }}
+{%- if message.get('reasoning_content') %}{{- '<think>' ~ message['reasoning_content'] ~ '</think>\n' }}{%- endif %}
+{%- if message.get('content') %}{{- message['content'] }}{%- endif %}
+{{- '<function_calls>' }}
+{%- for call in message['tool_calls'] %}
+{{- call['function']['name'] ~ '(' }}
+{%- for key, value in call['function']['arguments'].items() %}
+{{- key ~ '=' ~ (value | tojson) }}{{- ', ' if not loop.last else '' }}
+{%- endfor %}
+{{- ')' }}{{- '\n' if not loop.last else '' }}
+{%- endfor %}
+{{- '</function_calls><|im_end|>\n' }}
+{%- elif message['role'] in ['tool', 'environment'] %}
+{{- '<|im_start|>environment\n' ~ message['content'] ~ '<|im_end|>\n' }}
+{%- else %}
+{{- '<|im_start|>' ~ message['role'] ~ '\n' ~ (message.get('content') or '') ~ '<|im_end|>\n' }}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- if add_generation_prompt %}
+{{- '<|im_start|>assistant\n<think>' }}
+{%- endif %}
